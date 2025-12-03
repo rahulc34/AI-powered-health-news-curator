@@ -1,12 +1,10 @@
-import { useState } from "react";
-import "./App.css";
+import FeedScreen from "./screens/FeedScreen";
+import { ArticleProvider } from "./context/ArticleContext";
 
-function App() {
+export default function App() {
   return (
-    <>
-      <h1>hello</h1>
-    </>
+    <ArticleProvider>
+      <FeedScreen />
+    </ArticleProvider>
   );
 }
-
-export default App;
