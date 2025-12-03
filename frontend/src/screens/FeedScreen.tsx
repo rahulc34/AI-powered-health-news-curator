@@ -4,37 +4,88 @@ import ArticleCard from "../components/ArticleCard";
 import ExplainModal from "../components/ExplainModal";
 
 export default function FeedScreen() {
-  const { articles, loading, loadInitial, loadMore, refresh, explain } =
-    useArticles();
+  const {
+    articles,
+    loading,
+    loadingMore,
+    refreshing,
+    error,
+    loadInitial,
+    loadMore,
+    refresh,
+  } = useArticles();
 
-  const [selectedArticle, setSelectedArticle] = useState<string | null>(null);
+  const [selectedArticleId, setSelectedArticleId] = useState<string | null>(null);
 
   useEffect(() => {
     loadInitial();
   }, []);
 
+  const selectedArticle = articles.find(a => a.id === selectedArticleId);
+
   return (
-    <div>
-      <button onClick={refresh}>↻ Refresh</button>
+    <div className="p-4 max-w-3xl mx-auto space-y-6">
 
-      {loading && <p>Loading...</p>}
+      {/* Header */}
+      <header className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold text-gray-800">
+          Health News Feed
+        </h1>
 
-      {articles.map(article => (
-        <ArticleCard
-          key={article.id}
-          article={article}
-          onExplain={() => setSelectedArticle(article.id)}
-        />
-      ))}
+        <button
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
+          onClick={refresh}
+          disabled={refreshing || loading}
+        >
+          {refreshing ? "Refreshing..." : "↻ Refresh"}
+        </button>
+      </header>
 
-      <button onClick={loadMore}>Load More</button>
+      {/* Error message */}
+      {error && (
+        <div className="p-4 bg-red-100 text-red-700 border border-red-300 rounded-lg text-sm">
+          {error}
+        </div>
+      )}
 
+      {/* Loading state */}
+      {loading && (
+        <p className="text-gray-600 text-center text-lg">Loading articles...</p>
+      )}
+
+      {/* Article list */}
+      <div className="space-y-4">
+        {articles.length > 0 ? (
+          articles.map(article => (
+            <ArticleCard
+              key={article.id}
+              article={article}
+              onExplain={() => setSelectedArticleId(article.id)}
+            />
+          ))
+        ) : (
+          !loading && (
+            <p className="text-gray-500 text-center">No articles available.</p>
+          )
+        )}
+      </div>
+
+      {/* Load More */}
+      <div className="flex justify-center">
+        <button
+          className="mt-4 px-6 py-2 bg-gray-200 rounded-lg text-gray-700 hover:bg-gray-300 transition disabled:opacity-50"
+          onClick={loadMore}
+          disabled={loadingMore || loading}
+        >
+          {loadingMore ? "Loading more..." : "Load More"}
+        </button>
+      </div>
+
+      {/* Explanation Modal */}
       <ExplainModal
-        isOpen={selectedArticle !== null}
-        explanation={
-          articles.find(a => a.id === selectedArticle)?.fullExplanation
-        }
-        onClose={() => setSelectedArticle(null)}
+        isOpen={selectedArticleId !== null}
+        explanation={selectedArticle?.fullExplanation}
+        onClose={() => setSelectedArticleId(null)}
       />
     </div>
   );
