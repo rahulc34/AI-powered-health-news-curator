@@ -1,164 +1,163 @@
-# AI-Based Health News Curator
-
-An AI-powered tool that transforms complex health news articles into simple, digestible summaries — including TL;DRs, key takeaways, and friendly rewritten explanations.
+# 📘 AI-Based Health News Curator  
+A web-based application that loads health news, summarizes each article using AI, and provides a friendly explanation on demand. Built with **React**, **TypeScript**, **Express**, and **OpenAI**.
 
 ---
 
 ## 1. Project Setup & Demo
 
-### Web Setup
+### 🖥 Web Frontend
 ```bash
+cd frontend
 npm install
-npm start
+npm run dev
 ```
-This runs the React app locally at **http://localhost:3000**.
+
+Runs at:  
+👉 http://localhost:5173 (Vite)  
+or  
+👉 http://localhost:3000 (CRA)
+
+---
+
+### 🛠 Backend (Node + Express)
+```bash
+cd backend
+npm install
+npm run dev
+```
+
+Create a `.env` file:
+
+```
+OPENAI_API_KEY=your_openai_key_here
+PORT=5000
+```
+
+Backend runs at:  
+👉 http://localhost:5000
+
+---
 
 ## 2. Problem Understanding
 
-The purpose of this project is to build an **AI-driven health news curator** that helps users quickly understand health-related content without reading long or technical articles.
+The goal is to build an **AI-powered health news curator** that simplifies complex medical news into easy-to-read summaries and explanations.
 
-### Core Tasks
-- Load **mock health news articles** (JSON or RSS dump)
-- Summarize each article using AI:
-  - **2-line TL;DR**
-  - **3 short key takeaways**
-- Display a scrollable feed with:
-  - Pagination
-  - Pull-to-refresh / regenerate summary behavior
-- Provide an expanded article view with a **simplified AI rewrite**
+### Core Requirements
+1. Load mock/RSS health articles  
+2. Use AI to generate:  
+   - **2-line TL;DR**  
+   - **3 key takeaways**  
+3. Display summaries in a paginated feed with:  
+   - Load More  
+   - Pull-to-refresh  
+4. When an article is expanded → AI rewrites it in a more friendly way  
+5. Ensure consistent formatting and smooth loading states  
 
 ### Assumptions
-- Mock article data is sufficient (no external API required)
-- Regenerated summaries may vary slightly (acceptable)
-- AI should avoid medical advice; summarization only
-- No backend/authentication needed — frontend-only project
+- No database required  
+- Mock/RSS data allowed  
+- Backend handles all OpenAI calls  
+- Explanations cached in memory  
+- No user accounts required  
 
 ---
 
 ## 3. AI Prompts & Iterations
 
-### Initial Prompt Issues
-Early AI prompts produced:
-- Irregular bullet formatting
-- More than two TL;DR lines
-- Technical, hard-to-understand summaries
+### Initial Prompt for Summaries
+```
+Generate 10 health news summaries in JSON format. 
+Each must include:
+- id
+- title
+- a 2-line TL;DR
+- exactly 3 key takeaways
+```
 
----
+### Problems Encountered
+- AI returned invalid JSON  
+- TL;DR exceeded 2 lines  
+- Some responses had more than 3 points  
 
-### Refined Summary Prompt
-\`\`\`
-You are a helpful assistant that summarizes health news for everyday readers.
+### Refined Prompt
+```
+Output ONLY valid JSON.
 
-Given the article below, produce ONLY the following JSON:
-
+Return an array of objects:
 {
-  "tldr": [
-    "First line of TLDR (max 140 characters).",
-    "Second line of TLDR (max 140 characters)."
-  ],
-  "takeaways": [
-    "Short key takeaway 1 (max 160 characters).",
-    "Short key takeaway 2 (max 160 characters).",
-    "Short key takeaway 3 (max 160 characters)."
-  ]
+  "id": "<uuid>",
+  "title": "<title>",
+  "tl_dr": "<2 lines only>",
+  "takeaways": ["point1", "point2", "point3"]
 }
 
-Rules:
-- Use plain, friendly language.
-- Avoid jargon or explain briefly.
-- No extra text outside the JSON.
+Do not include markdown or explanations.
+```
 
-ARTICLE: {{articleText}}
-\`\`\`
+### Explain Prompt
+```
+Rewrite this article in simple, friendly language:
 
----
+  Title: ${article.title}
+  TLDR: ${article.tl_dr}
+  Key Takeaways:
+  - ${article.takeaways.join("\n- ")}
 
-### Refined Expanded Article Prompt
-\`\`\`
-Rewrite this article for a general audience.
-
-Rules:
-- Friendly tone
-- Short paragraphs
-- Use headings and bullet points
-- Max length ~600 words
-- No medical advice
-- Explain technical terms briefly
-
-Output format (Markdown):
-
-# Title: {{title}}
-
-## What this is about
-(2–3 short sentences)
-
-## Key points
-- Bullet point 1
-- Bullet point 2
-- Bullet point 3
-
-## Why it matters
-(2–4 sentences)
-
-## Anything to watch out for
-(brief cautions, no personal medical advice)
-
-ARTICLE: {{articleText}}
-\`\`\`
+  Output only the rewritten explanation.
+```
 
 ---
 
 ## 4. Architecture & Code Structure
 
-### Navigation
-- **Web:** `App.tsx` (React Router)
-  - `/` → Load 10 News
+### Frontend Structure
+```
+frontend/src
+├── api/
+│   └── aiService.ts
+├── components/
+│   ├── ArticleCard.tsx
+│   ├── ExplainModal.tsx
+│   └── Loader.tsx
+├── context/
+│   ├── ArticleContext.tsx
+├── hooks/
+│   └── useArticles.ts
+├── screens/
+│   └── FeedScreen.tsx
+├── types/
+│   └── Article.ts
+└── App.tsx
+```
 
----
+### Backend Structure
+```
+backend/src
+├── routes/
+│   └── articleRoutes.ts
+│   └── explainRoutes.ts
+├── controllers/
+│   └── articleController.ts
+│   └── explainController.ts
+├── services/
+│   └── openaiService.ts
+├── types/
+│   └── Article.ts
+├── utils/
+└── index.ts
+```
 
-### Folder Structure
-\`\`\`
-src/
-  App.tsx
-  screens/
-    ExplanationScreen.tsx
-    FeedScreen.tsx
-  components/
-    ArticleCard.tsx
-    ExplainModel.tsx
-    Loader.tsx
-  context/
-    ArticleContext.tsx
-  types/
-    Article.ts
-  hooks/
-    useArticles.ts
-  api/
-    aiService.ts
-\`\`\`
-
----
-
-### State Management
-Using **React Context + hook**:
-- Global article state
-- Loading & error states
-- Summary regeneration
-- 
 ---
 
 ## 5. Known Issues / Improvements
 
 ### Current Limitations
-- AI summarization runs sequentially → slow for many articles
-- Pagination resets on refresh
-- No retry UI for failed AI summaries
-- Expanded rewrite may vary in length
-- Basic UI styling (no themes, animations)
+- AI delay may cause slow explanations  
+- Pull-to-refresh reloads entire dataset  
 
-### Possible Improvements
-- Add caching for AI summaries
-- Preserve scroll position during refresh
-- Implement skeleton loading animations
-- Add filters/search UI
-- Add user preferences (font size, dark/light mode)
+### Potential Improvements
+- Database or Redis caching  
+- Better transitions in modal  
+- Retry button for explanation failures  
+- Add dark mode  
+
