@@ -1,55 +1,52 @@
-AI-Based Health News Curator – README
-1. Project Setup & Demo
-Web Setup
+# AI-Based Health News Curator
+
+An AI-powered tool that transforms complex health news articles into simple, digestible summaries — including TL;DRs, key takeaways, and friendly rewritten explanations.
+
+---
+
+## 1. Project Setup & Demo
+
+### Web Setup
+```bash
 npm install
 npm start
+```
+This runs the React app locally at **http://localhost:3000**.
 
-Runs the React app locally (e.g., http://localhost:3000).
+## 2. Problem Understanding
 
-2. Problem Understanding
+The purpose of this project is to build an **AI-driven health news curator** that helps users quickly understand health-related content without reading long or technical articles.
 
-The goal is to build an AI-powered health news curator that converts complex health articles into simple, digestible summaries. Users should be able to see short TL;DR summaries, key takeaways, and expanded plain-language rewrites of articles.
+### Core Tasks
+- Load **mock health news articles** (JSON or RSS dump)
+- Summarize each article using AI:
+  - **2-line TL;DR**
+  - **3 short key takeaways**
+- Display a scrollable feed with:
+  - Pagination
+  - Pull-to-refresh / regenerate summary behavior
+- Provide an expanded article view with a **simplified AI rewrite**
 
-Core Tasks:
+### Assumptions
+- Mock article data is sufficient (no external API required)
+- Regenerated summaries may vary slightly (acceptable)
+- AI should avoid medical advice; summarization only
+- No backend/authentication needed — frontend-only project
 
-Load mock health news articles (from JSON or RSS dump).
+---
 
-Summarize each article using AI:
+## 3. AI Prompts & Iterations
 
-2-line TL;DR
+### Initial Prompt Issues
+Early AI prompts produced:
+- Irregular bullet formatting
+- More than two TL;DR lines
+- Technical, hard-to-understand summaries
 
-3 concise key takeaways
+---
 
-Display a scrollable feed with:
-
-Pagination
-
-Pull-to-refresh / regenerate states
-
-Allow expanding an article to show a simplified, friendly rewrite created by AI.
-
-Assumptions Made:
-
-Mock article data is acceptable (no real API required).
-
-Summaries do not need to match word-for-word on regeneration.
-
-The AI should avoid medical advice; it only summarizes existing published articles.
-
-No backend or authentication is required.
-
-3. AI Prompts & Iterations
-Initial Prompt Attempt
-
-Early prompts asked for summaries but produced:
-
-Irregular bullet formatting
-
-More than 2 TL;DR lines
-
-Highly technical language
-
-Refined Summary Prompt
+### Refined Summary Prompt
+\`\`\`
 You are a helpful assistant that summarizes health news for everyday readers.
 
 Given the article below, produce ONLY the following JSON:
@@ -71,13 +68,13 @@ Rules:
 - Avoid jargon or explain briefly.
 - No extra text outside the JSON.
 
-ARTICLE:
-{{articleText}}
+ARTICLE: {{articleText}}
+\`\`\`
 
+---
 
-This produced consistent length, structure, and easier-to-render results.
-
-Refined Expanded Article Prompt
+### Refined Expanded Article Prompt
+\`\`\`
 Rewrite this article for a general audience.
 
 Rules:
@@ -106,75 +103,62 @@ Output format (Markdown):
 ## Anything to watch out for
 (brief cautions, no personal medical advice)
 
-ARTICLE:
-{{articleText}}
+ARTICLE: {{articleText}}
+\`\`\`
 
+---
 
-This ensured clean structure and predictable UI behavior.
+## 4. Architecture & Code Structure
 
-4. Architecture & Code Structure
-Navigation
+### Navigation
+- **Web:** `App.tsx` (React Router)
+  - `/` → Load 10 News
 
-Web:
-App.tsx manages navigation through React Router:
+---
 
-/ → Load 10 News on Screen 
-
-/explain → Detailed Article View
-
-File & Module Structure
+### Folder Structure
+\`\`\`
 src/
-  App.tsx                      # Navigation
+  App.tsx
   screens/
-    LoadNewsScreen.tsx
+    ExplanationScreen.tsx
     FeedScreen.tsx
-    ArticleDetailScreen.tsx
   components/
     ArticleCard.tsx
+    ExplainModel.tsx
+    Loader.tsx
   context/
-    NewsContext.tsx
-  services/
-    aiService.ts               # Handles AI calls
-    mockNewsService.ts         # Loads sample articles
-  assets/
-    mockNews.json
+    ArticleContext.tsx
   types/
-    news.ts                    # Type definitions
+    Article.ts
+  hooks/
+    useArticles.ts
+  api/
+    aiService.ts
+\`\`\`
 
-State Management
+---
 
-React Context + custom hook
+### State Management
+Using **React Context + hook**:
+- Global article state
+- Loading & error states
+- Summary regeneration
+- 
+---
 
-Provides:
+## 5. Known Issues / Improvements
 
-loading & error states
+### Current Limitations
+- AI summarization runs sequentially → slow for many articles
+- Pagination resets on refresh
+- No retry UI for failed AI summaries
+- Expanded rewrite may vary in length
+- Basic UI styling (no themes, animations)
 
-regenerate summary updates
-
-5. Screenshots / Screen Recording
-  
-
-6. Known Issues / Improvements
-Current Limitations
-
-AI summarization runs sequentially → slow for large batches
-
-Pagination resets after refresh
-
-No detailed retry handling for failed AI requests
-
-Expanded rewrite may occasionally be too long
-
-Basic styling (no dark mode by default)
-
-Possible Improvements
-
-Cache summaries locally
-
-Improve scrolling state preservation
-
-Add UI skeleton loaders & shimmer effects
-
-Implement topic filters or search
-
-Add user preferences (font size, dark/light mode)
+### Possible Improvements
+- Add caching for AI summaries
+- Preserve scroll position during refresh
+- Implement skeleton loading animations
+- Add filters/search UI
+- Add user preferences (font size, dark/light mode)
