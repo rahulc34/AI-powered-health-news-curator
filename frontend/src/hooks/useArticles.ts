@@ -10,6 +10,7 @@ export function useArticles() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [explainingId, setExplainingId] = useState<string | null>(null);
 
   async function loadInitial() {
     setLoading(true);
@@ -51,7 +52,7 @@ export function useArticles() {
       setLoadingMore(false);
     }
   }
-  
+
   async function refresh() {
     setRefreshing(true);
     setError(null);
@@ -73,13 +74,18 @@ export function useArticles() {
   }
 
   async function explain(id: string) {
+    setError(null);
     const article = articles.find((a) => a.id === id);
     if (!article) {
       setError("Article not found.");
       return;
     }
 
+    if (article.fullExplanation) return;
+
     try {
+      setExplainingId(id);
+
       const explanation = await explainArticle(article);
 
       if (!explanation) {
@@ -95,6 +101,8 @@ export function useArticles() {
     } catch (err) {
       setError("Error generating explanation.");
       console.error("explain error:", err);
+    } finally {
+      setExplainingId(null);
     }
   }
 
@@ -108,5 +116,6 @@ export function useArticles() {
     loadMore,
     refresh,
     explain,
+    explainingId,
   };
 }

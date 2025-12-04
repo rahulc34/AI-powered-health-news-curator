@@ -15,23 +15,19 @@ export default function FeedScreen() {
     refresh,
   } = useArticles();
 
-  const [selectedArticleId, setSelectedArticleId] = useState<string | null>(null);
+  const [selectedArticleId, setSelectedArticleId] = useState<string | null>(
+    null
+  );
 
   useEffect(() => {
     loadInitial();
   }, []);
 
-  const selectedArticle = articles.find(a => a.id === selectedArticleId);
-
   return (
     <div className="p-4 max-w-3xl mx-auto space-y-6">
-
       {/* Header */}
       <header className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-gray-800">
-          Health News Feed
-        </h1>
-
+        <h1 className="text-3xl font-bold text-gray-800">Health News Feed</h1>
         <button
           className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
           onClick={refresh}
@@ -55,18 +51,25 @@ export default function FeedScreen() {
 
       {/* Article list */}
       <div className="space-y-4">
-        {articles.length > 0 ? (
-          articles.map(article => (
-            <ArticleCard
-              key={article.id}
-              article={article}
-              onExplain={() => setSelectedArticleId(article.id)}
-            />
-          ))
-        ) : (
-          !loading && (
-            <p className="text-gray-500 text-center">No articles available.</p>
-          )
+        {articles.length > 0
+          ? articles.map((article) => (
+              <ArticleCard
+                key={article.id}
+                article={article}
+                onExplain={() => setSelectedArticleId(article.id)}
+              />
+            ))
+          : !loading && (
+              <p className="text-gray-500 text-center">
+                No articles available.
+              </p>
+            )}
+
+        {/* Error message */}
+        {articles.length > 0 && error && (
+          <div className="p-4 bg-red-100 text-red-700 border border-red-300 rounded-lg text-sm">
+            {error}
+          </div>
         )}
       </div>
 
@@ -84,7 +87,7 @@ export default function FeedScreen() {
       {/* Explanation Modal */}
       <ExplainModal
         isOpen={selectedArticleId !== null}
-        explanation={selectedArticle?.fullExplanation}
+        articleId={selectedArticleId}
         onClose={() => setSelectedArticleId(null)}
       />
     </div>
